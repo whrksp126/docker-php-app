@@ -1,8 +1,19 @@
 services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - php
+    networks:
+      - internal
+
   php:
     build: .
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     volumes:
       - ./src:/var/www/html
     depends_on:
@@ -12,11 +23,13 @@ services:
       - MYSQL_DATABASE=myapp
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
+    networks:
+      - internal
 
   db:
     image: mysql:8.0
-    ports:
-      - "3306:3306"
+    expose:
+      - "3306"
     environment:
       - MYSQL_ROOT_PASSWORD=rootpassword
       - MYSQL_DATABASE=myapp
@@ -24,6 +37,12 @@ services:
       - MYSQL_PASSWORD=password
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - internal
 
 volumes:
   mysql_data:
+
+networks:
+  internal:
+    driver: bridge
